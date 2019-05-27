@@ -2662,7 +2662,7 @@ namespace MsgReader.Rtf
 				        {
 					        if (reader.CurrentToken.Key != "list")
 					        {
-						        // ²»ÊÇÒÔlist¿ªÍ·£¬ºöÂÔµô
+						        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½listï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½ï¿½Ôµï¿½
 						        ReadToEndOfGroup(reader);
 						        reader.ReadToken();
 						        break;
@@ -3293,7 +3293,15 @@ namespace MsgReader.Rtf
 
             while (reader.ReadToken() != null)
 	        {
-		        switch (reader.Keyword)
+		        if (reader.LastToken?.Key=="'" && reader?.Keyword != "'" && hexBuffer != string.Empty && !encoding.IsSingleByte ) {
+                    //double byte charset was detected for the last token but only one byte was used so far. 
+                    //This token should carry the second byte but it doesn't.
+                    //Workaround:To display it anyway, we treat it as a single byte char.
+                    var buff = new[] { byte.Parse(hexBuffer, NumberStyles.HexNumber) };
+                    hexBuffer = string.Empty;
+                    stringBuilder.Append(encoding.GetString(buff));
+                }
+				switch (reader.Keyword)
 		        {
                     case Consts.Fonttbl:
                         // Read font table
